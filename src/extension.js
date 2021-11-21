@@ -852,7 +852,7 @@ class DataClassGenerator {
    * @param {string[]} validOverrides
    */
   requiresPart (part, validOverrides = []) {
-    this.imports.requiresImport(part, validOverrides)
+    this.imports.requiresPart(part, validOverrides)
   }
 
   /**
