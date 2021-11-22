@@ -11,14 +11,14 @@ var isFlutter = false
 function activate (context) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'dart_data_class.generate.from_props',
+      'dart_freezed_data_class.generate.from_props',
       generateDataClass
     )
   )
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'dart_data_class.generate.from_json',
+      'dart_freezed_data_class.generate.from_json',
       generateJsonDataClass
     )
   )
@@ -1107,18 +1107,20 @@ class DataClassGenerator {
     for (let prop of oldProperties) {
       if (!prop.isThis) {
         constr += '  ' + prop.text
+      } else {
       }
     }
 
     for (let prop of clazz.properties) {
+      const parameter = `${prop.type} ${prop.name}`
       const oldProperty = this.findConstrParameter(prop, oldProperties)
       if (oldProperty != null) {
-        if (oldProperty.isThis) constr += '  ' + oldProperty.text
+        if (oldProperty.isThis)
+          constr +=
+            '  ' + `@JsonKey(name: '${prop.name}') required ${parameter},\n`
 
         continue
       }
-
-      const parameter = `${prop.type} ${prop.name}`
 
       constr += '  '
 
@@ -1824,36 +1826,36 @@ class DataClassCodeActions {
     if (!this.clazz.isWidget)
       codeActions.push(this.createDataClassFix(this.clazz))
 
-    if (readSetting('constructor.enabled'))
-      codeActions.push(this.createConstructorFix())
+    // if (readSetting('constructor.enabled'))
+    //   codeActions.push(this.createConstructorFix())
 
     // Only add constructor fix for widget classes.
     if (!this.clazz.isWidget) {
       // Copy with and JSON serialization should be handled by
       // subclasses.
       if (!this.clazz.isAbstract) {
-        if (readSetting('copyWith.enabled'))
-          codeActions.push(this.createCopyWithFix())
-        if (
-          readSettings([
-            'toMap.enabled',
-            'fromMap.enabled',
-            'toJson.enabled',
-            'fromJson.enabled'
-          ])
-        )
-          codeActions.push(this.createSerializationFix())
+        // if (readSetting('copyWith.enabled'))
+        //   codeActions.push(this.createCopyWithFix())
+        // if (
+        //   readSettings([
+        //     'toMap.enabled',
+        //     'fromMap.enabled',
+        //     'toJson.enabled',
+        //     'fromJson.enabled'
+        //   ])
+        // )
+        codeActions.push(this.createSerializationFix())
       }
 
-      if (readSetting('toString.enabled'))
-        codeActions.push(this.createToStringFix())
+      // if (readSetting('toString.enabled'))
+      //   codeActions.push(this.createToStringFix())
 
-      if (clazz.usesEquatable || readSetting('useEquatable'))
-        codeActions.push(this.createUseEquatableFix())
-      else {
-        if (readSettings(['equality.enabled', 'hashCode.enabled']))
-          codeActions.push(this.createEqualityFix())
-      }
+      // if (clazz.usesEquatable || readSetting('useEquatable'))
+      //   codeActions.push(this.createUseEquatableFix())
+      // else {
+      //   if (readSettings(['equality.enabled', 'hashCode.enabled']))
+      //     codeActions.push(this.createEqualityFix())
+      // }
     }
 
     return codeActions
@@ -1880,7 +1882,7 @@ class DataClassCodeActions {
   createDataClassFix (clazz) {
     if (clazz.didChange) {
       const fix = new vscode.CodeAction(
-        'Generate data class',
+        'Generate Freezed data class',
         vscode.CodeActionKind.QuickFix
       )
       fix.edit = this.getClazzEdit(clazz)
@@ -1924,32 +1926,32 @@ class DataClassCodeActions {
     return getReplaceEdit(clazz, imports || this.generator.imports)
   }
 
-  createConstructorFix () {
-    return this.constructQuickFix('constructor', 'Generate constructor')
-  }
+  // createConstructorFix () {
+  //   return this.constructQuickFix('constructor', 'Generate constructor')
+  // }
 
-  createCopyWithFix () {
-    return this.constructQuickFix('copyWith', 'Generate copyWith')
-  }
+  // createCopyWithFix () {
+  //   return this.constructQuickFix('copyWith', 'Generate copyWith')
+  // }
 
   createSerializationFix () {
     return this.constructQuickFix(
       'serialization',
-      'Generate JSON serialization'
+      'Generate Freezed JSON serialization'
     )
   }
 
-  createToStringFix () {
-    return this.constructQuickFix('toString', 'Generate toString')
-  }
+  // createToStringFix () {
+  //   return this.constructQuickFix('toString', 'Generate toString')
+  // }
 
-  createEqualityFix () {
-    return this.constructQuickFix('equality', 'Generate equality')
-  }
+  // createEqualityFix () {
+  //   return this.constructQuickFix('equality', 'Generate equality')
+  // }
 
-  createUseEquatableFix () {
-    return this.constructQuickFix('useEquatable', `Generate Equatable`)
-  }
+  // createUseEquatableFix () {
+  //   return this.constructQuickFix('useEquatable', `Generate Equatable`)
+  // }
 
   createImportsFix () {
     const imports = new Imports(this.document.getText())
@@ -1996,12 +1998,18 @@ function getReplaceEdit (values, imports = null, showLogs = false) {
   const uri = getDoc().uri
 
   const noChanges = []
+  let dataClassGenerator = new DataClassGenerator(
+    getDoc().getText(),
+    clazzes,
+    false
+  )
   for (var i = clazzes.length - 1; i >= 0; i--) {
     const clazz = clazzes[i]
 
     if (clazz.isValid) {
       if (clazz.didChange) {
         let replacement = clazz.generateClassReplacement()
+        dataClassGenerator.insertConstructor(clazz)
         // Seperate the classes with a new line when multiple
         // classes are being generated.
         if (!clazz.isLastInFile) {

@@ -1,7 +1,7 @@
 {
 	"name": "dart-data-class-generator",
-	"displayName": "Dart Data Class Generator",
-	"description": "Create dart data classes easily, fast and without writing boilerplate or running code generation.",
+	"displayName": "Dart Data Freezed Class Generator",
+	"description": "Create dart data Freezed classes easily, fast and without writing boilerplate",
 	"publisher": "BendixMa",
 	"version": "0.5.1",
 	"engines": {
@@ -17,7 +17,8 @@
 		"dart data class",
 		"dart data",
 		"dart",
-		"data class generator"
+		"data class generator",
+		"freezed"
 	],
 	"author": {
 		"name": "bxqm"
@@ -28,19 +29,19 @@
 	],
 	"activationEvents": [
 		"onLanguage:dart",
-		"onCommand:dart_data_class.generate.from_props",
-		"onCommand:dart_data_class.generate.from_json"
+		"onCommand:dart_freezed_data_class.generate.from_props",
+		"onCommand:dart_freezed_data_class.generate.from_json"
 	],
 	"main": "./src/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"title": "Dart Data Class Generator: Generate from class properties",
-				"command": "dart_data_class.generate.from_props"
+				"title": "Dart Data Freezed Class Generator: Generate from class properties",
+				"command": "dart_freezed_data_class.generate.from_props"
 			},
 			{
-				"title": "Dart Data Class Generator: Generate from JSON",
-				"command": "dart_data_class.generate.from_json"
+				"title": "Dart Data Freezed Class Generator: Generate from JSON",
+				"command": "dart_freezed_data_class.generate.from_json"
 			}
 		],
 		"configuration": [
